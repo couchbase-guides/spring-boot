@@ -6,17 +6,16 @@ projects: [spring-boot]
 :icons: font
 :source-highlighter: prettify
 :project_id: gs-accessing-data-couchbase
-This guide walks you through the process of using http://projects.spring.io/spring-boot/[Spring Boot] to build an application that stores data in and retrieves it from http://www.couchbase.com/[Couchbase], a document-based database.
-:imagesdir: images
+This guide walks you through the process of using http://projects.spring.io/spring-boot/[Spring Boot] to build an application that stores data in and retrieves it from http://developer.couchbase.com/[Couchbase], a document-based database.
 
 == What you'll build
 
-You will store a Json document representing a person in Couchbase Server using Spring Boot and the Couchbase Java SDK.
+You will store a Json document representing a person in Couchbase Server using Spring Boot and the http://developer.couchbase.com/documentation/server/current/sdks/java-2.2/java-intro.html[Couchbase Java SDK].
 
 == What you'll need
 
 * 15-30 minutes
-* A Java code editor with java 1.8 
+* A Java code editor with java 1.8+
 * Maven
 * link:http://www.couchbase.com/nosql-databases/downloads[Couchbase Server 4.5+] (follow the instructions to install Couchbase and create a bucket - this guide assumes you will have it running locally)
 
@@ -25,7 +24,7 @@ You will store a Json document representing a person in Couchbase Server using S
 === Install and launch Couchbase
 With your project set up, you can install and launch Couchbase.
     
-For whatever operating system you are using, instructions and downloads can be found at  http://developer.couchbase.com/documentation/server/4.0/install/install-intro.html.
+For whatever operating system you are using, instructions and downloads can be found at  http://developer.couchbase.com/documentation/server/current/install/install-intro.html[http://developer.couchbase.com/documentation/server/current/install/install-intro.html].
 
 After you install Couchbase, launch it. You should see a webpage opening in your default browser allowing you to setup Couchbase
 
@@ -115,5 +114,5 @@ INFO: Opened bucket default
 The most important line is the last one showing the document has been stored successfuly. The previous line are logs showing the Couchbase SDK connection to the cluster.
 
 == Summary
-Congratulations! You set up a Couchbase server and wrote a simple application that stores a document in Couchbase.
+Congratulations! You set up a Couchbase server and wrote a simple Spring Boot application that stores a document in Couchbase.
 
