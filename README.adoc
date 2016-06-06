@@ -1,0 +1,119 @@
+---
+tags: [spring-boot, couchbase]
+projects: [spring-boot]
+---
+:toc:
+:icons: font
+:source-highlighter: prettify
+:project_id: gs-accessing-data-couchbase
+This guide walks you through the process of using http://projects.spring.io/spring-boot/[Spring Boot] to build an application that stores data in and retrieves it from http://www.couchbase.com/[Couchbase], a document-based database.
+:imagesdir: images
+
+== What you'll build
+
+You will store a Json document representing a person in Couchbase Server using Spring Boot and the Couchbase Java SDK.
+
+== What you'll need
+
+* 15-30 minutes
+* A Java code editor with java 1.8 
+* Maven
+* link:http://www.couchbase.com/nosql-databases/downloads[Couchbase Server 4.5+] (follow the instructions to install Couchbase and create a bucket - this guide assumes you will have it running locally)
+
+== Setup
+
+=== Install and launch Couchbase
+With your project set up, you can install and launch Couchbase.
+    
+For whatever operating system you are using, instructions and downloads can be found at  http://developer.couchbase.com/documentation/server/4.0/install/install-intro.html.
+
+After you install Couchbase, launch it. You should see a webpage opening in your default browser allowing you to setup Couchbase
+
+=== Dependencies
+
+The following code will rely on Spring Boot and the Couchbase Java SDK so make sure you add the correct dependency:
+
+    	<dependencies>
+    		<dependency>
+    			<groupId>org.springframework.boot</groupId>
+    			<artifactId>spring-boot-starter</artifactId>
+    		</dependency>
+    		<dependency>
+    			<groupId>com.couchbase.client</groupId>
+    			<artifactId>java-client</artifactId>
+    		</dependency>
+    	</dependencies>
+
+You don't have to specify any version is you specify the right parent. Spring Boot has everything covered here:
+
+    	<parent>
+    		<groupId>org.springframework.boot</groupId>
+    		<artifactId>spring-boot-starter-parent</artifactId>
+    		<version>1.4.0.M3</version>
+    	</parent>
+
+=== Configure Couchbase Injection
+
+Because you have Spring Boot and the Couchbase SDK in the application classpath, a Couchbase connection can be setup automatically.
+
+Spring Boot needs to know at least one IP of your Couchbase nodes to automatically connect to it. This must be provided in your `application.properties` file so go ahead and create it:
+
+`src/main/resources/application.properties`
+[source,java]
+----
+include::complete/src/main/resources/application.properties[]
+----
+
+If you installed Couchbase as explained previously, it should be running locally on your machine so you should use _127.0.0.1_ as your IP.
+
+== Code
+
+=== Create an Application class
+
+Here you create an Application class with all the components. Since we are in a Spring Boot application, a first easy step is to add the `@SpringBootApplication` annotation. Its a convenience annotation that adds all of the following:
+    
+- `@Configuration` tags the class as a source of bean definitions for the application context.
+- `@EnableAutoConfiguration` tells Spring Boot to start adding beans based on classpath settings, other beans, and various property settings.
+- Normally you would add `@EnableWebMvc` for a Spring MVC app, but Spring Boot adds it automatically when it sees **spring-webmvc** on the classpath. This flags the application as a web application and activates key behaviors such as setting up a `DispatcherServlet`.
+- `@ComponentScan` tells Spring to look for other components, configurations, and services in the the `hello` package, allowing it to find the `HelloController`.
+
+`src/main/java/hello/Application.java`
+[source,java]
+----
+include::complete/src/main/java/hello/Application.java[]
+----
+
+The easiest way to run code and exit the application it to use a http://docs.spring.io/spring-boot/docs/current/api/org/springframework/boot/CommandLineRunner.html[CommandLineRunner]. You have to declare a new @Bean returning an instance of `CommandLineRunner`. In the method signature you can inject any bean. Creating a document only requires a `Bucket`. 
+
+The `main()` method starts by creating an empty `JsonObject`. You can then add the properties you want in that object like so:
+
+        jo.put("firstName", "Alice");
+        jo.put("lastName", "Smith");
+
+A `JsonObject` must be wrapped into a `JsonDocument`. You can create a JsonDocument once you have a key and a value like so:
+
+    JsonDocument.create("asmith", jsonObject);
+
+The next step is to store that `JsonDocument` in the default bucket. The `upsert` method is a inserting a document if it does not exist or updates it if it exists:
+
+    bucket.upsert(document);
+
+== Run
+
+To test if this worked, fetch the document again using `bucket.get("asmith")` and print the result. Once you run the application you should see something like this:
+....
+Jun 03, 2016 5:17:45 PM com.couchbase.client.core.CouchbaseCore <init>
+INFO: CouchbaseEnvironment: {sslEnabled=false, sslKeystoreFile='null', sslKeystorePassword='null', queryEnabled=false, queryPort=8093, bootstrapHttpEnabled=true, bootstrapCarrierEnabled=true, bootstrapHttpDirectPort=8091, bootstrapHttpSslPort=18091, bootstrapCarrierDirectPort=11210, bootstrapCarrierSslPort=11207, ioPoolSize=8, computationPoolSize=8, responseBufferSize=16384, requestBufferSize=16384, kvServiceEndpoints=1, viewServiceEndpoints=1, queryServiceEndpoints=1, searchServiceEndpoints=1, ioPool=NioEventLoopGroup, coreScheduler=CoreScheduler, eventBus=DefaultEventBus, packageNameAndVersion=couchbase-jvm-core/1.2.5 (git: 1.2.5), dcpEnabled=false, retryStrategy=BestEffort, maxRequestLifetime=75000, retryDelay=ExponentialDelay{growBy 1.0 MICROSECONDS, powers of 2; lower=100, upper=100000}, reconnectDelay=ExponentialDelay{growBy 1.0 MILLISECONDS, powers of 2; lower=32, upper=4096}, observeIntervalDelay=ExponentialDelay{growBy 1.0 MICROSECONDS, powers of 2; lower=10, upper=100000}, keepAliveInterval=30000, autoreleaseAfter=2000, bufferPoolingEnabled=true, tcpNodelayEnabled=true, mutationTokensEnabled=false, socketConnectTimeout=1000, dcpConnectionBufferSize=20971520, dcpConnectionBufferAckThreshold=0.2, queryTimeout=75000, viewTimeout=75000, kvTimeout=2500, connectTimeout=5000, disconnectTimeout=25000, dnsSrvEnabled=false}
+Jun 03, 2016 5:17:45 PM com.couchbase.client.core.node.CouchbaseNode signalConnected
+INFO: Connected to Node localhost
+Jun 03, 2016 5:17:45 PM com.couchbase.client.core.config.DefaultConfigurationProvider$8 call
+INFO: Opened bucket default
+{"firstName":"Alice","lastName":"Smith"}
+
+....
+
+The most important line is the last one showing the document has been stored successfuly. The previous line are logs showing the Couchbase SDK connection to the cluster.
+
+== Summary
+Congratulations! You set up a Couchbase server and wrote a simple application that stores a document in Couchbase.
+
