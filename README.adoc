@@ -6,6 +6,9 @@ projects: [spring-boot]
 :icons: font
 :source-highlighter: prettify
 :project_id: gs-accessing-data-couchbase
+
+= Getting started with Couchbase and Spring Boot
+
 This guide walks you through the process of using http://projects.spring.io/spring-boot/[Spring Boot] to build an application that stores data in and retrieves it from http://developer.couchbase.com/[Couchbase], a document-based database.
 
 == What you'll build
